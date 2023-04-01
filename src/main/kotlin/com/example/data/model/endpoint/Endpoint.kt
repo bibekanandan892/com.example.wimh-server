@@ -10,4 +10,5 @@ sealed class Endpoint(val path: String) {
     object Chat : Endpoint(path = "/chat-socket")
     object Unauthorized: Endpoint(path = "/unauthorized")
     object Authorized: Endpoint(path = "/authorized")
+    object HeartStatus: Endpoint(path = "/heart_status")
 }

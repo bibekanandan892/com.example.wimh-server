@@ -103,4 +103,8 @@ class UserRepositoryImpl(dataBase: CoroutineDatabase) : UserRepository {
     override suspend fun getUserHeartId(subId: String): String? {
         return users.findOne(filter = User::subId eq subId)?.userHeartId
     }
+
+    override suspend fun getUserByHeartId(heartId: String): User? {
+        return users.findOne(filter = User::userHeartId eq heartId)
+    }
 }

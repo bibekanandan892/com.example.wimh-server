@@ -9,5 +9,6 @@ interface UserRepository {
     suspend fun exceptConnectionRequest(senderHeartId : String, acceptorHeartId: String): Boolean
     suspend fun disconnectHeart(user: User): Boolean
     suspend fun getUserHeartId(subId: String): String?
+    suspend fun getUserByHeartId(heartId: String): User?
 
 }
