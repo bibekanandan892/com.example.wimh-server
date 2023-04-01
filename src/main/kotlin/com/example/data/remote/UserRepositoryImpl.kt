@@ -7,7 +7,7 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 
-class UserRepositoryImpl(dataBase: CoroutineDatabase) : UserRepository {
+class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : UserRepository {
 
 
     private val users = dataBase.getCollection<User>()//collection is a data holder for multiple fields

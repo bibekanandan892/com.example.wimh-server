@@ -7,5 +7,5 @@ object Constants {
     const val JWT_ISSUER = "wimh_server"
     const val HEART_ID_KEY = "heartId"
     const val SECRET_KEY = "00112233445566778899aabbccddeeff"
-    const val DATABASE = "where is my heart database"
+    const val DATABASE = "where-is-my-heart-database"
 }
