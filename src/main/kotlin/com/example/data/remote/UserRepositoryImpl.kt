@@ -22,23 +22,35 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
         }
     }
 
-    override suspend fun sendConnectionRequest(heartId: String, senderUser: ConnectionRequest): Boolean {
-        val findUser = users.findOne(filter = User::userHeartId eq heartId)
-        return if (findUser != null) {
-            if (findUser.connectedHeardId != null) {
+    override suspend fun sendConnectionRequest(fromHeartId: String, toHeartId: String): Boolean {
+        val findFormUser = users.findOne(filter = User::userHeartId eq fromHeartId)
+        val findToUser = users.findOne(filter = User::userHeartId eq toHeartId)
+        return if (findFormUser == null || findToUser == null) {
+            false
+        } else {
+            return if (findFormUser.connectedHeardId != null || findToUser.connectedHeardId != null) {
                 false
             } else {
-                findUser.listOfConnectRequest?.toMutableList()?.add(senderUser)
+                var newListOfConnectRequest = findToUser.listOfConnectRequest
+                newListOfConnectRequest = newListOfConnectRequest.toMutableList().apply {
+                    add(
+                        ConnectionRequest(
+                            subId = findFormUser.subId,
+                            name = findFormUser.name,
+                            emailAddress = findFormUser.emailAddress,
+                            userHeartId = findFormUser.userHeartId,
+                            profilePhoto = findFormUser.profilePhoto
+                        )
+                    )
+                }
                 users.updateOne(
-                    filter = User::userHeartId eq heartId,
+                    filter = User::userHeartId eq toHeartId,
                     update = setValue(
                         property = User::listOfConnectRequest,
-                        value = findUser.listOfConnectRequest
+                        value = (newListOfConnectRequest.toList())
                     )
                 ).wasAcknowledged()
             }
-        } else {
-            false
         }
     }
 
@@ -54,14 +66,14 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
                 filter = User::userHeartId eq senderHeartId,
                 update = setValue(
                     property = User::listOfConnectRequest,
-                    value = null
+                    value = listOf()
                 )
             ).wasAcknowledged()
             val removeAcceptorRequestList = users.updateOne(
                 filter = User::userHeartId eq acceptorHeartId,
                 update = setValue(
                     property = User::listOfConnectRequest,
-                    value = null
+                    value = listOf()
                 )
             ).wasAcknowledged()
             val connectSenderToAcceptor = users.updateOne(
@@ -80,27 +92,30 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
         }
     }
 
-    override suspend fun disconnectHeart(user: User): Boolean {
-        val findUser1HeartId = user.userHeartId
-        val findUser2HeartId = user.connectedHeardId
-        val findUser1 = users.findOne(filter = User::userHeartId eq user.connectedHeardId)
-        val findUser2 = users.findOne(filter = User::userHeartId eq user.userHeartId)
-       return if(findUser1 == null || findUser2 == null){
+    override suspend fun disconnectHeart(userHeartId: String,connectedHeardId: String): Boolean {
+        val findUser1 = users.findOne(filter = User::userHeartId eq connectedHeardId)
+        val findUser2 = users.findOne(filter = User::userHeartId eq userHeartId)
+        return if (findUser1 == null || findUser2 == null) {
             false
-        }else{
-            val removeUser1 = users.updateOne(filter = User::userHeartId eq findUser1HeartId, update = setValue(
-                property = User::connectedHeardId,
-                value = null
-            )).wasAcknowledged()
-           val removeUser2 = users.updateOne(filter = User::userHeartId eq findUser2HeartId, update = setValue(
-               property = User::connectedHeardId,
-               value = null
-           )).wasAcknowledged()
-           (removeUser1 && removeUser2)
-       }
+        } else {
+            val removeUser1 = users.updateOne(
+                filter = User::userHeartId eq userHeartId,
+                update = setValue(
+                    property = User::connectedHeardId,
+                    value = null
+                )
+            ).wasAcknowledged()
+            val removeUser2 = users.updateOne(
+                filter = User::userHeartId eq connectedHeardId, update = setValue(
+                    property = User::connectedHeardId,
+                    value = null
+                )
+            ).wasAcknowledged()
+            (removeUser1 && removeUser2)
+        }
     }
 
-    override suspend fun getUserHeartId(subId: String): String? {
+    override suspend fun getHeartIdBySubId(subId: String): String? {
         return users.findOne(filter = User::subId eq subId)?.userHeartId
     }
 

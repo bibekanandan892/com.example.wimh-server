@@ -1,11 +1,10 @@
 package com.example.data.model
 
-import com.example.data.model.user_details.User
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ApiResponse(
+data class ApiResponse<T>(
     val success: Boolean,
-    val user: User? = null,
+    val response: T? = null,
     val message: String? = null
 )

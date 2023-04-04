@@ -14,5 +14,5 @@ data class User(
     val userHeartId: String?= null,
     val profilePhoto: String?= null,
     val connectedHeardId: String?= null,
-    val listOfConnectRequest : List<ConnectionRequest?>?= null
+    val listOfConnectRequest : List<ConnectionRequest?> = listOf()
 )

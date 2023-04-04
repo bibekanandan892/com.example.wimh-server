@@ -2,7 +2,9 @@ package com.example.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.example.data.model.ApiResponse
 import com.example.data.model.auth.GoogleTokenRequest
+import com.example.data.model.auth.LoginTokenResponse
 import com.example.data.model.endpoint.Endpoint
 import com.example.data.model.user_details.User
 import com.example.domain.UserRepository
@@ -32,7 +34,7 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
                 val name = result.payload["name"].toString()
                 val emailAddress = result.payload["email"].toString()
                 val profilePhoto = result.payload["picture"].toString()
-                val getHeartId = userRepository.getUserHeartId(sub)
+                val getHeartId = userRepository.getHeartIdBySubId(sub)
                 if (getHeartId == null) {
                     val heartId = UUID.randomUUID().toString()
                     val token = JWT.create()
@@ -50,7 +52,7 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
                             userHeartId = heartId
                         )
                     )
-                    call.respond(mapOf("token" to token))
+                    call.respond(message = ApiResponse(success = true,response = LoginTokenResponse(token = token)))
                 } else {
                     val token = JWT.create()
                         .withAudience(JWT_AUDIENCE)
@@ -58,7 +60,7 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
                         .withClaim(HEART_ID_KEY, getHeartId)
                         .withExpiresAt(Date(System.currentTimeMillis() + 25920000000000L))
                         .sign(Algorithm.HMAC256(SECRET_KEY))
-                    call.respond(mapOf("token" to token))
+                    call.respond(message = ApiResponse(success = true, response = LoginTokenResponse(token = token)))
                 }
             } else {
                 call.respondRedirect(Endpoint.Unauthorized.path)

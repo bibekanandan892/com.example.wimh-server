@@ -16,7 +16,7 @@ fun Route.authorizedRoute() {
             val principal = call.authentication.principal<JWTPrincipal>()
             val userId = principal?.payload?.getClaim(HEART_ID_KEY)?.asString()
             call.respond(
-                message = ApiResponse(success = true, message = userId),
+                message = ApiResponse<String>(success = true, message = userId),
                 status = HttpStatusCode.OK
             )
         }
