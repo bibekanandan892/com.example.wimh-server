@@ -24,7 +24,7 @@ fun Route.sendConnectRequestRoute(app: Application, userRepository : UserReposit
                 if(fromHeartId != null && request.toHeartId != null){
                     val status = userRepository.sendConnectionRequest(fromHeartId = fromHeartId, toHeartId = request.toHeartId)
                     if(status.success){
-                        call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.BadRequest)
+                        call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.OK)
                     }else{
                         call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.OK)
                     }
