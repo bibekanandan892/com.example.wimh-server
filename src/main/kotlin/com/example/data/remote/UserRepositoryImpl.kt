@@ -38,7 +38,7 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
                 var newListOfConnectRequest = findToUser.listOfConnectRequest
                 var isContain: Boolean = false
                 newListOfConnectRequest.forEach { connectionRequest ->
-                    if (connectionRequest?.userHeartId == toHeartId) {
+                    if (connectionRequest?.userHeartId == fromHeartId) {
                         isContain = true
                         return@forEach
                     }
