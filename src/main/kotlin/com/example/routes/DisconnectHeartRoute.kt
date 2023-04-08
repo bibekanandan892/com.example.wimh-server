@@ -23,10 +23,10 @@ fun Route.disconnectHeartRoute(app: Application, userRepository: UserRepository)
                 app.log.info("heartid = $userHeartId")
                 if(userHeartId != null && request.toHeartId != null){
                     val status = userRepository.disconnectHeart(userHeartId = userHeartId , connectedHeardId =  request.toHeartId)
-                    if(status){
-                        call.respond(message = ApiResponse<String>(success = true, message = "Heart Disconnect"))
+                    if(status.success){
+                        call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.OK)
                     }else{
-                        call.respond(message = ApiResponse<String>(success = false, message = "Unable to Disconnect Heart"), status = HttpStatusCode.OK)
+                        call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.BadRequest)
                     }
                 }else{
                     call.respond(message = ApiResponse<String>(success = false, message = "Heart Id Invalid"), status = HttpStatusCode.Unauthorized)

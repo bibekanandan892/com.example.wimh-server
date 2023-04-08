@@ -23,16 +23,16 @@ fun Route.acceptConnectionRequest(userRepository: UserRepository,app : Applicati
                 app.log.info("heartid = $userHeartId")
                 if(userHeartId != null && request.toHeartId != null){
                     val status = userRepository.exceptConnectionRequest(senderHeartId = request.toHeartId, acceptorHeartId = userHeartId)
-                    if(status){
-                        call.respond(message = ApiResponse<String>(success = true, message = "request accepted"))
+                    if(status.success){
+                        call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.OK)
                     }else{
-                        call.respond(message = ApiResponse<String>(success = false, message = "Unable to accepted Request"), status = HttpStatusCode.OK)
+                        call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.BadRequest)
                     }
                 }else{
                     call.respond(message = ApiResponse<String>(success = false, message = "Heart Id Invalid"), status = HttpStatusCode.Unauthorized)
                 }
             }catch (e : Exception){
-                call.respond(message = ApiResponse<String>(success = false, message = "Some Thing Went Wrong"), status = HttpStatusCode.Unauthorized)
+                call.respond(message = ApiResponse<String>(success = false, message = "Something Went Wrong"), status = HttpStatusCode.Unauthorized)
             }
         }
     }

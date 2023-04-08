@@ -23,16 +23,16 @@ fun Route.sendConnectRequestRoute(app: Application, userRepository : UserReposit
                 app.log.info("heartid = $fromHeartId")
                 if(fromHeartId != null && request.toHeartId != null){
                     val status = userRepository.sendConnectionRequest(fromHeartId = fromHeartId, toHeartId = request.toHeartId)
-                    if(status){
-                        call.respond(message = ApiResponse<String>(success = true, message = "Request Sent"))
+                    if(status.success){
+                        call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.BadRequest)
                     }else{
-                        call.respond(message = ApiResponse<String>(success = false, message = "Unable to Send Request"), status = HttpStatusCode.OK)
+                        call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.OK)
                     }
                 }else{
                     call.respond(message = ApiResponse<String>(success = false, message = "Heart Id Invalid"), status = HttpStatusCode.Unauthorized)
                 }
             }catch (e : Exception){
-                call.respond(message = ApiResponse<String>(success = false, message = "Some Thing Went Wrong"), status = HttpStatusCode.Unauthorized)
+                call.respond(message = ApiResponse<String>(success = false, message = "Something Went Wrong"), status = HttpStatusCode.Unauthorized)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.data.remote
 
+import com.example.data.model.Status
 import com.example.data.model.user_details.ConnectionRequest
 import com.example.data.model.user_details.User
 import com.example.domain.UserRepository
@@ -12,55 +13,72 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
 
     private val users = dataBase.getCollection<User>()//collection is a data holder for multiple fields
 
-    override suspend fun saveUser(user: User): Boolean {
+    override suspend fun saveUser(user: User): Status {
         val existingUser =
             users.findOne(filter = User::subId eq user.subId)//if I pass this user which I want to save I want to get existing user from database
         return if (existingUser == null) {
-            users.insertOne(document = user).wasAcknowledged()
+            val status = users.insertOne(document = user).wasAcknowledged()
+            Status(success = status, message = if (status) "User Created" else "Problem in Create User")
         } else {
-            false
+            Status(success = false, message = "User already Exist")
         }
     }
 
-    override suspend fun sendConnectionRequest(fromHeartId: String, toHeartId: String): Boolean {
+    override suspend fun sendConnectionRequest(fromHeartId: String, toHeartId: String): Status {
         val findFormUser = users.findOne(filter = User::userHeartId eq fromHeartId)
         val findToUser = users.findOne(filter = User::userHeartId eq toHeartId)
         return if (findFormUser == null || findToUser == null) {
-            false
+            Status(success = false, "User not Found")
         } else {
             return if (findFormUser.connectedHeardId != null || findToUser.connectedHeardId != null) {
-                false
+                Status(success = false, message = "Heart already Connected")
+            } else if (fromHeartId == toHeartId) {
+                Status(success = false, message = "Try With Different Heart Id")
             } else {
                 var newListOfConnectRequest = findToUser.listOfConnectRequest
-                newListOfConnectRequest = newListOfConnectRequest.toMutableList().apply {
-                    add(
-                        ConnectionRequest(
-                            subId = findFormUser.subId,
-                            name = findFormUser.name,
-                            emailAddress = findFormUser.emailAddress,
-                            userHeartId = findFormUser.userHeartId,
-                            profilePhoto = findFormUser.profilePhoto
+                val isContain = newListOfConnectRequest.contains(
+                    element = ConnectionRequest(
+                        subId = findFormUser.subId,
+                        name = findFormUser.name,
+                        emailAddress = findFormUser.emailAddress,
+                        userHeartId = findFormUser.userHeartId,
+                        profilePhoto = findFormUser.profilePhoto
+                    )
+                )
+                return if (isContain) {
+                    Status(success = false, message = "Request already Sent")
+                } else {
+                    newListOfConnectRequest = newListOfConnectRequest.toMutableList().apply {
+                        add(
+                            ConnectionRequest(
+                                subId = findFormUser.subId,
+                                name = findFormUser.name,
+                                emailAddress = findFormUser.emailAddress,
+                                userHeartId = findFormUser.userHeartId,
+                                profilePhoto = findFormUser.profilePhoto
+                            )
                         )
-                    )
+                    }
+                    val isSuccess = users.updateOne(
+                        filter = User::userHeartId eq toHeartId,
+                        update = setValue(
+                            property = User::listOfConnectRequest,
+                            value = (newListOfConnectRequest.toList())
+                        )
+                    ).wasAcknowledged()
+                    Status(success = isSuccess, message = if (isSuccess) "Request Sent" else "Unable to send Request")
                 }
-                users.updateOne(
-                    filter = User::userHeartId eq toHeartId,
-                    update = setValue(
-                        property = User::listOfConnectRequest,
-                        value = (newListOfConnectRequest.toList())
-                    )
-                ).wasAcknowledged()
             }
         }
     }
 
-    override suspend fun exceptConnectionRequest(senderHeartId: String, acceptorHeartId: String): Boolean {
+    override suspend fun exceptConnectionRequest(senderHeartId: String, acceptorHeartId: String): Status {
         val senderUser = users.findOne(filter = User::userHeartId eq senderHeartId)
         val acceptorUser = users.findOne(filter = User::userHeartId eq acceptorHeartId)
         return if (senderUser?.connectedHeardId != null) {
-            false
+            Status(success = false, message = "Heart is Already Connect")
         } else if (acceptorUser?.connectedHeardId != null) {
-            false
+            Status(success = false, message = "Heart is Already Connect")
         } else {
             val removeSenderRequestList = users.updateOne(
                 filter = User::userHeartId eq senderHeartId,
@@ -88,15 +106,17 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
                     value = senderHeartId
                 )
             ).wasAcknowledged()
-            (removeSenderRequestList && removeAcceptorRequestList && connectAcceptorToSender && connectSenderToAcceptor)
+            val isSuccess =
+                (removeSenderRequestList && removeAcceptorRequestList && connectAcceptorToSender && connectSenderToAcceptor)
+            Status(success = isSuccess, message = if (isSuccess) "Connect Success" else "Connect Problem")
         }
     }
 
-    override suspend fun disconnectHeart(userHeartId: String,connectedHeardId: String): Boolean {
+    override suspend fun disconnectHeart(userHeartId: String, connectedHeardId: String): Status {
         val findUser1 = users.findOne(filter = User::userHeartId eq connectedHeardId)
         val findUser2 = users.findOne(filter = User::userHeartId eq userHeartId)
         return if (findUser1 == null || findUser2 == null) {
-            false
+            Status(success = false, message = "User not found")
         } else {
             val removeUser1 = users.updateOne(
                 filter = User::userHeartId eq userHeartId,
@@ -111,7 +131,8 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
                     value = null
                 )
             ).wasAcknowledged()
-            (removeUser1 && removeUser2)
+            val isSuccess = (removeUser1 && removeUser2)
+            Status(success = isSuccess, message = if (isSuccess) "disconnect Successfully" else "SomeThing Went wrong")
         }
     }
 
