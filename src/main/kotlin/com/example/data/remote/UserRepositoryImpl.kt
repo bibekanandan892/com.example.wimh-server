@@ -36,15 +36,13 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
                 Status(success = false, message = "Try With Different Heart Id")
             } else {
                 var newListOfConnectRequest = findToUser.listOfConnectRequest
-                val isContain = newListOfConnectRequest.contains(
-                    element = ConnectionRequest(
-                        subId = findFormUser.subId,
-                        name = findFormUser.name,
-                        emailAddress = findFormUser.emailAddress,
-                        userHeartId = findFormUser.userHeartId,
-                        profilePhoto = findFormUser.profilePhoto
-                    )
-                )
+                var isContain: Boolean = false
+                newListOfConnectRequest.forEach { connectionRequest ->
+                    if (connectionRequest?.userHeartId == toHeartId) {
+                        isContain = true
+                        return@forEach
+                    }
+                }
                 return if (isContain) {
                     Status(success = false, message = "Request already Sent")
                 } else {
