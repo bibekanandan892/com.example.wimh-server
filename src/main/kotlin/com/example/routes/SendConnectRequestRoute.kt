@@ -26,10 +26,10 @@ fun Route.sendConnectRequestRoute(app: Application, userRepository : UserReposit
                     if(status.success){
                         call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.OK)
                     }else{
-                        call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.OK)
+                        call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.BadRequest)
                     }
                 }else{
-                    call.respond(message = ApiResponse<String>(success = false, message = "Heart Id Invalid"), status = HttpStatusCode.Unauthorized)
+                    call.respond(message = ApiResponse<String>(success = false, message = "Heart Id Invalid"), status = HttpStatusCode.BadRequest    )
                 }
             }catch (e : Exception){
                 call.respond(message = ApiResponse<String>(success = false, message = "Something Went Wrong"), status = HttpStatusCode.Unauthorized)
