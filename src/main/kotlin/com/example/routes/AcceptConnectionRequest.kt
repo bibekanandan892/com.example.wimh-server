@@ -3,6 +3,7 @@ package com.example.routes
 import com.example.data.model.ApiResponse
 import com.example.data.model.connect_request.ConnectRequest
 import com.example.data.model.endpoint.Endpoint
+import com.example.data.model.user_details.User
 import com.example.domain.UserRepository
 import com.example.util.Constants
 import io.ktor.http.*
@@ -23,8 +24,9 @@ fun Route.acceptConnectionRequest(userRepository: UserRepository,app : Applicati
                 app.log.info("heartid = $userHeartId")
                 if(userHeartId != null && request.toHeartId != null){
                     val status = userRepository.exceptConnectionRequest(senderHeartId = request.toHeartId, acceptorHeartId = userHeartId)
-                    if(status.success){
-                        call.respond(message = ApiResponse<String>(success = true, message = status.message),status = HttpStatusCode.OK)
+                    val user = userRepository.getUserByHeartId(heartId = userHeartId)
+                    if(status.success && user != null){
+                        call.respond(message = ApiResponse(success = true, message = status.message, response = user),status = HttpStatusCode.OK)
                     }else{
                         call.respond(message = ApiResponse<String>(success = false, message = status.message), status = HttpStatusCode.BadRequest)
                     }
