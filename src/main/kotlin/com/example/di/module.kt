@@ -16,5 +16,4 @@ val koinModule = module {
     single<UserRepository> {//type of user data source
         UserRepositoryImpl(get())// get would fetch koin instance which is already provided amd already declared aboce
     }
-
 }

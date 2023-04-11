@@ -4,6 +4,7 @@ import com.example.data.model.Status
 import com.example.data.model.user_details.ConnectionRequest
 import com.example.data.model.user_details.User
 import com.example.domain.UserRepository
+import org.litote.kmongo.SetTo
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
@@ -73,9 +74,11 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
     override suspend fun exceptConnectionRequest(senderHeartId: String, acceptorHeartId: String): Status {
         val senderUser = users.findOne(filter = User::userHeartId eq senderHeartId)
         val acceptorUser = users.findOne(filter = User::userHeartId eq acceptorHeartId)
-        return if (senderUser?.connectedHeardId != null) {
+        return if (senderUser == null || acceptorUser == null) {
+            Status(success = false, message = "user not found")
+        } else if (senderUser.connectedHeardId != null) {
             Status(success = false, message = "Heart is Already Connect")
-        } else if (acceptorUser?.connectedHeardId != null) {
+        } else if (acceptorUser.connectedHeardId != null) {
             Status(success = false, message = "Heart is Already Connect")
         } else {
             val removeSenderRequestList = users.updateOne(
@@ -92,44 +95,107 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
                     value = listOf()
                 )
             ).wasAcknowledged()
-            val connectSenderToAcceptor = users.updateOne(
-                filter = User::userHeartId eq senderHeartId, update = setValue(
-                    property = User::connectedHeardId,
-                    value = acceptorHeartId
+
+            val op1 = users.updateMany(
+                filter = User::userHeartId eq senderHeartId,
+                updates = arrayOf(
+                    SetTo(
+                        property = User::connectedHeardId,
+                        value = acceptorUser.userHeartId
+                    ),
+                    SetTo(
+                        property = User::connectedUserName,
+                        value = acceptorUser.name
+                    ),
+                    SetTo(
+                        property = User::connectedUserEmail,
+                        value = acceptorUser.emailAddress
+                    ),
+                    SetTo(
+                        property = User::connectUserPhoto,
+                        value = acceptorUser.profilePhoto
+                    )
                 )
             ).wasAcknowledged()
-            val connectAcceptorToSender = users.updateOne(
-                filter = User::userHeartId eq acceptorHeartId, update = setValue(
-                    property = User::connectedHeardId,
-                    value = senderHeartId
+            val op2 = users.updateMany(
+                filter = User::userHeartId eq acceptorHeartId,
+                updates = arrayOf(
+                    SetTo(
+                        property = User::connectedHeardId,
+                        value = senderUser.userHeartId
+                    ),
+                    SetTo(
+                        property = User::connectedUserName,
+                        value = senderUser.name
+                    ),
+                    SetTo(
+                        property = User::connectedUserEmail,
+                        value = senderUser.emailAddress
+                    ),
+                    SetTo(
+                        property = User::connectUserPhoto,
+                        value = senderUser.profilePhoto
+                    )
                 )
             ).wasAcknowledged()
+
             val isSuccess =
-                (removeSenderRequestList && removeAcceptorRequestList && connectAcceptorToSender && connectSenderToAcceptor)
+                (removeSenderRequestList && removeAcceptorRequestList && op1 && op2)
             Status(success = isSuccess, message = if (isSuccess) "Connect Success" else "Connect Problem")
         }
     }
 
+
     override suspend fun disconnectHeart(userHeartId: String, connectedHeardId: String): Status {
-        val findUser1 = users.findOne(filter = User::userHeartId eq connectedHeardId)
-        val findUser2 = users.findOne(filter = User::userHeartId eq userHeartId)
-        return if (findUser1 == null || findUser2 == null) {
+        val senderUser = users.findOne(filter = User::userHeartId eq connectedHeardId)
+        val acceptorUser = users.findOne(filter = User::userHeartId eq userHeartId)
+        return if (senderUser == null || acceptorUser == null) {
             Status(success = false, message = "User not found")
         } else {
-            val removeUser1 = users.updateOne(
+
+            val op1 = users.updateMany(
                 filter = User::userHeartId eq userHeartId,
-                update = setValue(
-                    property = User::connectedHeardId,
-                    value = null
+                updates = arrayOf(
+                    SetTo(
+                        property = User::connectedHeardId,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::connectedUserName,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::connectedUserEmail,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::connectUserPhoto,
+                        value = null
+                    )
                 )
             ).wasAcknowledged()
-            val removeUser2 = users.updateOne(
-                filter = User::userHeartId eq connectedHeardId, update = setValue(
-                    property = User::connectedHeardId,
-                    value = null
+            val op2 = users.updateMany(
+                filter = User::userHeartId eq connectedHeardId,
+                updates = arrayOf(
+                    SetTo(
+                        property = User::connectedHeardId,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::connectedUserName,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::connectedUserEmail,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::connectUserPhoto,
+                        value = null
+                    )
                 )
             ).wasAcknowledged()
-            val isSuccess = (removeUser1 && removeUser2)
+            val isSuccess = (op1 && op2)
             Status(success = isSuccess, message = if (isSuccess) "disconnect Successfully" else "SomeThing Went wrong")
         }
     }
