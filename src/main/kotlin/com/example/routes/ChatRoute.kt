@@ -22,13 +22,13 @@ fun Route.chatRoute(chatService: ChatService) {
         webSocket("/chat") {
             val principal = call.authentication.principal<JWTPrincipal>()
             try {
-                val senderHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
-                if (senderHeartId == null) {
-                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
-                    return@webSocket
-                }
+//                val senderHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
+//                if (senderHeartId == null) {
+//                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
+//                    return@webSocket
+//                }
                 // Register the user with the chat service
-                chatService.register(senderHeartId, this)
+//                chatService.register(senderHeartId, this)
                 try {
                     // Handle incoming messages
                     for (frame in incoming) {
@@ -37,6 +37,7 @@ fun Route.chatRoute(chatService: ChatService) {
                             try {
 //                                 Gson().fromJson(messageEntityString, MessageEntity::class.java)
                                 val messageEntity =Json.decodeFromString<MessageEntity>(messageEntityString)
+                                chatService.register(messageEntity.fromUserHeartId, this)
                                 chatService.sendMessage(toUserId = messageEntity.toUserHeartId, messageEntityString = messageEntityString)
                             }catch (e: Exception){
                                 e.printStackTrace()
