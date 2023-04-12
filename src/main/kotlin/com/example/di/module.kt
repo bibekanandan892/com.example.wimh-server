@@ -1,5 +1,6 @@
 package com.example.di
 
+import com.example.data.remote.ChatService
 import com.example.data.remote.UserRepositoryImpl
 import com.example.domain.UserRepository
 import com.example.util.Constants.DATABASE
@@ -15,5 +16,8 @@ val koinModule = module {
     }
     single<UserRepository> {//type of user data source
         UserRepositoryImpl(get())// get would fetch koin instance which is already provided amd already declared aboce
+    }
+    single {
+        ChatService()
     }
 }

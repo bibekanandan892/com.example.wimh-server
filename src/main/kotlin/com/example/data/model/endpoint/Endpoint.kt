@@ -12,5 +12,5 @@ sealed class Endpoint(val path: String) {
     object Authorized: Endpoint(path = "/authorized")
     object HeartStatus: Endpoint(path = "/heart_status")
     object SendConnectRequest: Endpoint(path = "/send_connect_request")
-        object AcceptConnectRequest: Endpoint(path = "/accept_connect_request")
+    object AcceptConnectRequest: Endpoint(path = "/accept_connect_request")
 }

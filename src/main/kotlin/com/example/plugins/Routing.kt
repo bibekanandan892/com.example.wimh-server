@@ -1,12 +1,13 @@
 package com.example.plugins
 
+import com.example.data.remote.ChatService
 import com.example.domain.UserRepository
 import com.example.routes.*
 import com.example.routes.unauthorizedRoute
 import io.ktor.server.routing.*
 import io.ktor.server.application.*
 
-fun Application.configureRouting(userRepository: UserRepository) {
+fun Application.configureRouting(userRepository: UserRepository, chatService: ChatService) {
     routing {
         rootRoute()
         tokenVerificationRoute(application,userRepository = userRepository)
@@ -15,6 +16,7 @@ fun Application.configureRouting(userRepository: UserRepository) {
         acceptConnectionRequest(app = application, userRepository = userRepository)
         heartStatusRoute(app = application, userRepository = userRepository)
         sendConnectRequestRoute(app = application , userRepository = userRepository)
+        chatRoute(chatService = chatService)
         unauthorizedRoute()
     }
 }
