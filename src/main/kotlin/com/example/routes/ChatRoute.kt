@@ -14,6 +14,8 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 fun Route.chatRoute(chatService: ChatService) {
     authenticate("jwt-auth") {
@@ -33,7 +35,8 @@ fun Route.chatRoute(chatService: ChatService) {
                         if (frame is Frame.Text) {
                             val messageEntityString = frame.readText()
                             try {
-                                val messageEntity = Gson().fromJson(messageEntityString, MessageEntity::class.java)
+//                                 Gson().fromJson(messageEntityString, MessageEntity::class.java)
+                                val messageEntity =Json.decodeFromString<MessageEntity>(messageEntityString)
                                 chatService.sendMessage(toUserId = messageEntity.toUserHeartId, messageEntityString = messageEntityString)
                             }catch (e: Exception){
                                 e.printStackTrace()
