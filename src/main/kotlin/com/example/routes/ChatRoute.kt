@@ -18,54 +18,55 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 fun Route.chatRoute(chatService: ChatService) {
-    authenticate("jwt-auth") {
-        webSocket("/chat") {
-            val principal = call.authentication.principal<JWTPrincipal>()
-            try {
+//    authenticate("jwt-auth") {
+    webSocket("/chat") {
+//            val principal = call.authentication.principal<JWTPrincipal>()
+        try {
 //                val senderHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
 //                if (senderHeartId == null) {
 //                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
 //                    return@webSocket
 //                }
-                // Register the user with the chat service
+            // Register the user with the chat service
 //                chatService.register(senderHeartId, this)
-                try {
-                    // Handle incoming messages
-                    for (frame in incoming) {
-                        if (frame is Frame.Text) {
-                            val messageEntityString = frame.readText()
-                            try {
+            try {
+                // Handle incoming messages
+                for (frame in incoming) {
+                    if (frame is Frame.Text) {
+                        val messageEntityString = frame.readText()
+                        try {
 //                                 Gson().fromJson(messageEntityString, MessageEntity::class.java)
-                                val messageEntity =Json.decodeFromString<MessageEntity>(messageEntityString)
-                                chatService.register(messageEntity.fromUserHeartId, this)
-                                chatService.sendMessage(toUserId = messageEntity.toUserHeartId, messageEntityString = messageEntityString)
-                            }catch (e: Exception){
-                                e.printStackTrace()
-                            }
-
+                            val messageEntity = Json.decodeFromString<MessageEntity>(messageEntityString)
+                            chatService.register(messageEntity.fromUserHeartId, this)
+                            chatService.sendMessage(
+                                toUserId = messageEntity.toUserHeartId,
+                                messageEntityString = messageEntityString
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
+
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Handle exceptions and disconnections
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Handle exceptions and disconnections
+            }
 //                finally {
 //                    // Unregister the user from the chat service
 //                    chatService.unregister(senderHeartId)
 //                }
-            }catch (e : MemberAlreadyExistsException){
-                call.respond(HttpStatusCode.Conflict)
-            }catch (e : Exception){
-                e.printStackTrace()
-            }
-
-
-
-
+        } catch (e: MemberAlreadyExistsException) {
+            call.respond(HttpStatusCode.Conflict)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
+
+//        }
     }
 }
 
 data class MySession(
-    val userId:String
+    val userId: String
 )
