@@ -16,7 +16,7 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 
 fun Route.chatRoute(chatService: ChatService) {
-    authenticate("jwt-auth") {
+//    authenticate("jwt-auth") {
         webSocket("/chat") {
             val principal = call.authentication.principal<JWTPrincipal>()
             try {
@@ -59,7 +59,7 @@ fun Route.chatRoute(chatService: ChatService) {
 
 
         }
-    }
+//    }
 }
 
 data class MySession(
