@@ -47,6 +47,7 @@ fun Route.chatRoute(chatService: ChatService) {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    //lsdak
                     // Handle exceptions and disconnections
                 } finally {
                     chatService.unregister(senderHeartId)
