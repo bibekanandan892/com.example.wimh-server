@@ -1,18 +1,16 @@
 package com.example.data.remote
 
-import com.example.data.model.chat.MessageEntity
-import com.example.util.MemberAlreadyExistsException
+import com.example.domain.UserRepository
 import io.ktor.websocket.*
 import java.util.concurrent.ConcurrentHashMap
 
-class ChatService {
+class ChatService(private val userRepository: UserRepository) {
     private val users = ConcurrentHashMap<String, WebSocketSession>()
 
     fun register(userId: String, session: WebSocketSession) {
-        if(users.containsKey(userId)){
-            throw MemberAlreadyExistsException()
+        if(!users.containsKey(userId)){
+            users[userId] = session
         }
-        users[userId] = session
     }
 
 
@@ -25,12 +23,15 @@ class ChatService {
 
 
 
-    suspend fun sendMessage(toUserId : String,messageEntityString: String) {
+    suspend fun sendMessage(toUserId: String, messageEntityString: String, fromUserHeartId: String) {
         // Find the user to send the message to
          // Some logic to determine the recipient
-        val toUserSession = users[toUserId] ?: return // If the user is not online, do nothing
+        val toUserSession = users[toUserId] // If the user is not online, do nothing
 
-        // Send the message to the recipient
-        toUserSession.send(messageEntityString)
+        if(toUserSession == null){
+            userRepository.sendMessageNotification(toHeartId = toUserId,messageEntityString = messageEntityString,fromUserHeartId = fromUserHeartId)
+        }else{
+            toUserSession.send(messageEntityString)
+        }
     }
 }

@@ -17,5 +17,6 @@ data class User(
     val connectedUserName: String? = null,
     val connectedUserEmail: String? = null,
     val connectUserPhoto: String? = null,
+    val fcmToken : String? = null,
     val listOfConnectRequest : List<ConnectionRequest?> = listOf()
 )

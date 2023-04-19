@@ -59,6 +59,19 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
 
+
+
+    implementation ("io.ktor:ktor-client-core:$ktor_version")
+    implementation ("io.ktor:ktor-client-cio:$ktor_version")
+    implementation ("io.ktor:ktor-client-serialization:$ktor_version")
+    implementation ("io.ktor:ktor-client-websockets:$ktor_version")
+    implementation ("io.ktor:ktor-client-logging:$ktor_version")
+    implementation("io.ktor:ktor-client-auth:$ktor_version")
+    implementation ("com.google.code.gson:gson:2.10")
+
+
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
     //endregion
 
     //Region MongoDB

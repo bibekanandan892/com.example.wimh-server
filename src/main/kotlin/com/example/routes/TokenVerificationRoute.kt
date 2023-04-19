@@ -27,7 +27,7 @@ import java.util.*
 fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepository) {
     post(Endpoint.TokenVerification.path) {
         val request = call.receive<GoogleTokenRequest>()
-        if (request.tokenId.isNotEmpty()) {
+        if (request.tokenId.isNullOrEmpty()) {
             val result = verifyGoogleTokenId(tokenId = request.tokenId)
             if (result != null) {
                 val sub = result.payload["sub"].toString()
@@ -49,7 +49,8 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
                             name = name,
                             emailAddress = emailAddress,
                             profilePhoto = profilePhoto,
-                            userHeartId = heartId
+                            userHeartId = heartId,
+                            fcmToken = request.fcmToken
                         )
                     )
                     call.respond(message = ApiResponse(success = true,response = LoginTokenResponse(token = token)))
@@ -60,6 +61,7 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
                         .withClaim(HEART_ID_KEY, getHeartId)
                         .withExpiresAt(Date(System.currentTimeMillis() + 25920000000000L))
                         .sign(Algorithm.HMAC256(SECRET_KEY))
+                    userRepository.updateFcmToken(fcmToken = request.fcmToken, heartId = getHeartId)
                     call.respond(message = ApiResponse(success = true, response = LoginTokenResponse(token = token)))
                 }
             } else {
@@ -72,7 +74,7 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
     }
 }
 
-fun verifyGoogleTokenId(tokenId: String): GoogleIdToken? {
+fun verifyGoogleTokenId(tokenId: String?): GoogleIdToken? {
     return try {
         val verifier = GoogleIdTokenVerifier.Builder(NetHttpTransport(), GsonFactory())
             .setAudience(listOf(AUDIENCE))

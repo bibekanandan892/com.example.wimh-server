@@ -1,15 +1,32 @@
 package com.example.data.remote
 
 import com.example.data.model.Status
+import com.example.data.model.chat.MessageEntity
+import com.example.data.model.endpoint.Endpoint
+import com.example.data.model.fcm.FcmResponse
+import com.example.data.model.fcm.req.FcmRequest
+import com.example.data.model.fcm.req.Notification
 import com.example.data.model.user_details.ConnectionRequest
 import com.example.data.model.user_details.User
 import com.example.domain.UserRepository
+
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.network.sockets.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.util.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.litote.kmongo.SetTo
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
+import java.io.IOException
 
-class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : UserRepository {
+class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, private val httpClient: HttpClient) :
+    UserRepository {
 
 
     private val users = dataBase.getCollection<User>()//collection is a data holder for multiple fields
@@ -206,5 +223,56 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase) : 
 
     override suspend fun getUserByHeartId(heartId: String): User? {
         return users.findOne(filter = User::userHeartId eq heartId)
+    }
+
+    override suspend fun updateFcmToken(fcmToken: String?, heartId: String): Status {
+        val isSuccess = users.updateOne(
+            filter = User::userHeartId eq heartId,
+            update = setValue(property = User::fcmToken, value = fcmToken)
+        ).wasAcknowledged()
+        return if (isSuccess) Status(success = true, message = "Token Update Success") else Status(
+            success = false,
+            "something went wrong"
+        )
+    }
+
+    override suspend fun sendMessageNotification(
+        toHeartId: String, messageEntityString: String, fromUserHeartId: String
+    ): Status {
+        val toUser = getUserByHeartId(heartId = toHeartId)
+        val fromUser = getUserByHeartId(heartId = fromUserHeartId)
+        val messageEntity = Json.decodeFromString<MessageEntity>(messageEntityString)
+        return try {
+            val response = httpClient.post {
+                url(Endpoint.SendNotification.path)
+                setBody(
+                    body = FcmRequest(
+                        notification = Notification(
+                            body = fromUser?.name,
+                            title = messageEntity.message
+                        ), to = toUser?.fcmToken
+                    )
+                )
+            }
+            Status(
+                success = true,
+                message = response.body<FcmResponse>().results?.get(0)?.message_id
+                    ?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
+            )
+        } catch (e: ClientRequestException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: ServerResponseException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: RedirectResponseException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: ConnectTimeoutException) {
+            Status(success = false, message = (e.message ?: "Connection Timeout"))
+        } catch (e: SocketTimeoutException) {
+            Status(success = false, message = (e.message ?: "Socket Timeout"))
+        } catch (e: IOException) {
+            Status(success = false, message = (e.message ?: "Unknown IO Error"))
+        } catch (e: Exception) {
+            Status(success = false, message = (e.message ?: "Unknown Error"))
+        }
     }
 }

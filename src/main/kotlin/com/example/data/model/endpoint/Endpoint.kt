@@ -1,5 +1,7 @@
 package com.example.data.model.endpoint
 
+import com.example.util.Constants.FCM_BASE_URL
+
 sealed class Endpoint(val path: String) {
     object Root: Endpoint(path = "/")
     object TokenVerification: Endpoint(path = "/token_verification")
@@ -13,4 +15,7 @@ sealed class Endpoint(val path: String) {
     object HeartStatus: Endpoint(path = "/heart_status")
     object SendConnectRequest: Endpoint(path = "/send_connect_request")
     object AcceptConnectRequest: Endpoint(path = "/accept_connect_request")
+
+    //request to send end point
+    object SendNotification : Endpoint(path = "$FCM_BASE_URL/send")
 }
