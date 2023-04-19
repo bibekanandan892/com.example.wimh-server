@@ -27,15 +27,22 @@ import java.util.*
 fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepository) {
     post(Endpoint.TokenVerification.path) {
         val request = call.receive<GoogleTokenRequest>()
-        if (request.tokenId.isNullOrEmpty()) {
+        app.log.info("GETTING USER INFO ERROR: ${request.toString()}")
+        if (!request.tokenId.isNullOrEmpty()) {
+            app.log.info("GETTING USER INFO ERROR: ${request.tokenId}")
+
             val result = verifyGoogleTokenId(tokenId = request.tokenId)
             if (result != null) {
+                app.log.info("GETTING USER INFO ERROR: ${request}")
+
                 val sub = result.payload["sub"].toString()
                 val name = result.payload["name"].toString()
                 val emailAddress = result.payload["email"].toString()
                 val profilePhoto = result.payload["picture"].toString()
                 val getHeartId = userRepository.getHeartIdBySubId(sub)
                 if (getHeartId == null) {
+                    app.log.info("GETTING USER INFO ERROR: ${getHeartId}")
+
                     val heartId = UUID.randomUUID().toString()
                     val token = JWT.create()
                         .withAudience(JWT_AUDIENCE)
@@ -61,13 +68,19 @@ fun Route.tokenVerificationRoute(app: Application, userRepository: UserRepositor
                         .withClaim(HEART_ID_KEY, getHeartId)
                         .withExpiresAt(Date(System.currentTimeMillis() + 25920000000000L))
                         .sign(Algorithm.HMAC256(SECRET_KEY))
-                    userRepository.updateFcmToken(fcmToken = request.fcmToken, heartId = getHeartId)
+                    val status= userRepository.updateFcmToken(fcmToken = request.fcmToken, heartId = getHeartId)
+                    app.log.info("GETTING USER INFO ERROR: ${status.toString()}")
+
                     call.respond(message = ApiResponse(success = true, response = LoginTokenResponse(token = token)))
                 }
             } else {
+                app.log.info("GETTING USER INFO ERROR: 111111111}")
+
                 call.respondRedirect(Endpoint.Unauthorized.path)
             }
         } else {
+            app.log.info("GETTING USER INFO ERROR: ${222222222222}")
+
             call.respondRedirect(Endpoint.Unauthorized.path)
         }
 
