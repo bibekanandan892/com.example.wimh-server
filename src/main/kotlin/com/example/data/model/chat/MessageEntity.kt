@@ -4,8 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MessageEntity(
-    val fromUserHeartId : String,
-    val toUserHeartId : String,
+    val isMine: Boolean = false,
+    val fromUserHeartId: String,
+    val toUserHeartId: String,
     val message: String,
-    val currentTime : String
+    val currentTime: String,
+    val image: String? = null,
 )
