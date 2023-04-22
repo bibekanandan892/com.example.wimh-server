@@ -22,7 +22,7 @@ fun Route.heartStatusRoute(userRepository: UserRepository, app: Application){
                 if(heartId != null){
                     val user = userRepository.getUserByHeartId(heartId = heartId)
                     app.log.info("user = ${user.toString()}")
-                    call.respond(message = ApiResponse(success = true,response = user), status = HttpStatusCode.OK)
+                    call.respond(message = ApiResponse(success = true,response = user, message = if (user?.connectedHeardId == null) "Not Connect" else "Connect Successfully"), status = HttpStatusCode.OK)
                 }else{
                     call.respond(message = ApiResponse<String>(success = false, message = "Invalid Heart Id"))
                 }
