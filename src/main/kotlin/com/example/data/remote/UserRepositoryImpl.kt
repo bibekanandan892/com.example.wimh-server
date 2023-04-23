@@ -241,15 +241,14 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
     ): Status {
         val toUser = getUserByHeartId(heartId = toHeartId)
         val fromUser = getUserByHeartId(heartId = fromUserHeartId)
-        val messageEntity = Json.decodeFromString<MessageEntity>(messageEntityString)
         return try {
             val response = httpClient.post {
                 url(Endpoint.SendNotification.path)
                 setBody(
                     body = FcmRequest(
                         notification = Notification(
-                            body = fromUser?.name,
-                            title = messageEntity.message
+                            body = messageEntityString,
+                            title = fromUser?.name
                         ), to = toUser?.fcmToken
                     )
                 )
