@@ -251,7 +251,7 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
                     body = FcmRequest(
                         data = Data(
                             title = fromUser?.name,
-                            body = body,
+                            body = messageEntityString,
                         ), to = toUser?.fcmToken
                     )
                 )

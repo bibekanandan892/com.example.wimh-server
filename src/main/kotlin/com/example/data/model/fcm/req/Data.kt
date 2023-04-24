@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Data(
     @SerialName("body")
-    val body: Body?,
+    val body: String?,
     @SerialName("mutable_content")
     val mutableContent: Boolean? = true,
     @SerialName("sound")
