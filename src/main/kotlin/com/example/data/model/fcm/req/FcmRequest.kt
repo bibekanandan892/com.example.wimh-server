@@ -7,9 +7,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FcmRequest(
     @SerialName("data")
-    val `data`: Data? = Data(),
+    val `data`: Data? = null,
     @SerialName("notification")
-    val notification: Notification? = Notification(),
+    val notification: Notification? = null,
     @SerialName("to")
-    val to: String? = ""
+    val to: String? = "",
+    val priority: String =  "high"
 )

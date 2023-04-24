@@ -6,8 +6,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Data(
-    @SerialName("dl")
-    val dl: String? = "NA",
-    @SerialName("url")
-    val url: String? = "NA"
+    @SerialName("body")
+    val body: Body?,
+    @SerialName("mutable_content")
+    val mutableContent: Boolean? = true,
+    @SerialName("sound")
+    val sound: String? = "Tri-tone",
+    @SerialName("title")
+    val title: String?
 )

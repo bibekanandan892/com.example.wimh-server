@@ -4,6 +4,8 @@ import com.example.data.model.Status
 import com.example.data.model.chat.MessageEntity
 import com.example.data.model.endpoint.Endpoint
 import com.example.data.model.fcm.FcmResponse
+import com.example.data.model.fcm.req.Body
+import com.example.data.model.fcm.req.Data
 import com.example.data.model.fcm.req.FcmRequest
 import com.example.data.model.fcm.req.Notification
 import com.example.data.model.user_details.ConnectionRequest
@@ -241,17 +243,19 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
     ): Status {
         val toUser = getUserByHeartId(heartId = toHeartId)
         val fromUser = getUserByHeartId(heartId = fromUserHeartId)
+        val body = Json.decodeFromString<Body>(messageEntityString)
         return try {
             val response = httpClient.post {
                 url(Endpoint.SendNotification.path)
                 setBody(
                     body = FcmRequest(
-                        notification = Notification(
-                            body = messageEntityString,
-                            title = fromUser?.name
+                        data = Data(
+                            title = fromUser?.name,
+                            body = body,
                         ), to = toUser?.fcmToken
                     )
                 )
+                MessageEntity
             }
             Status(
                 success = true,
