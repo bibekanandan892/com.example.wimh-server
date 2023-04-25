@@ -27,8 +27,8 @@ fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
                     close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
                     return@webSocket
                 }
-                val isConnect = userRepository.getUserByHeartId(heartId = senderHeartId)?.connectedHeardId != null
-                if(!isConnect){
+                val isNotConnect = userRepository.getUserByHeartId(heartId = senderHeartId)?.connectedHeardId == null
+                if(isNotConnect){
                     close(CloseReason(CloseReason.Codes.VIOLATED_POLICY,"Your Heart is DesConnect"))
                     return@webSocket
                 }
@@ -44,7 +44,6 @@ fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
                                 chatService.sendMessage(
                                     toUserId = messageEntity.toUserHeartId,
                                     fromUserHeartId = messageEntity.fromUserHeartId,
-
                                     messageEntityString = messageEntityString
                                 )
                             } catch (e: Exception) {
@@ -54,8 +53,6 @@ fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    //lsdak
-                    // Handle exceptions and disconnections
                 } finally {
                     chatService.unregister(senderHeartId)
                 }

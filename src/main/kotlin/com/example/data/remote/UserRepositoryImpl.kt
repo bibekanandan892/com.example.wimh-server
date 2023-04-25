@@ -189,6 +189,9 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
                     SetTo(
                         property = User::connectUserPhoto,
                         value = null
+                    ),SetTo(
+                        property = User::fcmToken,
+                        value = null
                     )
                 )
             ).wasAcknowledged()
@@ -209,6 +212,10 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
                     ),
                     SetTo(
                         property = User::connectUserPhoto,
+                        value = null
+                    ),
+                    SetTo(
+                        property = User::fcmToken,
                         value = null
                     )
                 )
@@ -266,8 +273,7 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
             }
             Status(
                 success = true,
-                message = response.body<FcmResponse>().results?.get(0)?.message_id
-                    ?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
+                message = response.body<FcmResponse>().results?.get(0)?.message_id?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
             )
         } catch (e: ClientRequestException) {
             Status(success = false, message = (e.response.status.description))
