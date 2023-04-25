@@ -171,7 +171,6 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
         return if (senderUser == null || acceptorUser == null) {
             Status(success = false, message = "User not found")
         } else {
-
             val op1 = users.updateMany(
                 filter = User::userHeartId eq userHeartId,
                 updates = arrayOf(

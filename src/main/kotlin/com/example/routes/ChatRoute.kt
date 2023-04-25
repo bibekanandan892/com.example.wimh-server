@@ -2,6 +2,7 @@ package com.example.routes
 
 import com.example.data.model.chat.MessageEntity
 import com.example.data.remote.ChatService
+import com.example.domain.UserRepository
 import com.example.util.Constants
 import com.example.util.MemberAlreadyExistsException
 import io.ktor.http.*
@@ -15,14 +16,20 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-fun Route.chatRoute(chatService: ChatService) {
+fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
     authenticate("jwt-auth") {
         webSocket("/chat") {
             val principal = call.authentication.principal<JWTPrincipal>()
             try {
                 val senderHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
+
                 if (senderHeartId == null) {
                     close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
+                    return@webSocket
+                }
+                val isConnect = userRepository.getUserByHeartId(heartId = senderHeartId)?.connectedHeardId != null
+                if(!isConnect){
+                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY,"Your Heart is DesConnect"))
                     return@webSocket
                 }
                 // Register the user with the chat service
