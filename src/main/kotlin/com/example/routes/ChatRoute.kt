@@ -27,11 +27,6 @@ fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
                     close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
                     return@webSocket
                 }
-                val isNotConnect = userRepository.getUserByHeartId(heartId = senderHeartId)?.connectedHeardId == null
-                if(isNotConnect){
-                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY,"Your Heart is DesConnect"))
-                    return@webSocket
-                }
                 // Register the user with the chat service
                 chatService.register(senderHeartId, this)
                 try {
