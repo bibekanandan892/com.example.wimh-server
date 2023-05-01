@@ -189,9 +189,6 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                     SetTo(
                         property = User::connectUserPhoto,
                         value = null
-                    ), SetTo(
-                        property = User::fcmToken,
-                        value = null
                     )
                 )
             ).wasAcknowledged()
@@ -212,10 +209,6 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                     ),
                     SetTo(
                         property = User::connectUserPhoto,
-                        value = null
-                    ),
-                    SetTo(
-                        property = User::fcmToken,
                         value = null
                     )
                 )
