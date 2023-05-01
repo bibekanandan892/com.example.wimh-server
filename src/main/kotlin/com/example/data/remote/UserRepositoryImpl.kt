@@ -214,9 +214,9 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                 )
             ).wasAcknowledged()
             val isSuccess = (op1 && op2)
-            if (isSuccess) {
-                sendDisconnectNotification()
-            }
+
+            sendDisconnectNotification()
+
 
             Status(success = isSuccess, message = if (isSuccess) "disconnect Successfully" else "SomeThing Went wrong")
         }
@@ -267,9 +267,10 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                                 image = body.image,
                                 message = body.message,
                                 isMine = body.isMine,
+
                             ),
                         ),
-                        to = toUser?.fcmToken
+                        to = toUser?.fcmToken,
                     )
                 )
             }
@@ -302,7 +303,7 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                 setBody(
                     body = FcmRequest(
                         data = Data(
-                            isDisconnectRequest = "Yes"
+                            isDisconnectRequest = "Yes",
                         )
                     )
                 )

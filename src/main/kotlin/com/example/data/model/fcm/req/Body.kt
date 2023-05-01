@@ -13,7 +13,7 @@ data class Body(
     @SerialName("id")
     val id: Int?,
     @SerialName("image")
-    val image: String?,
+    val image: String? = null,
     @SerialName("isMine")
     val isMine: Boolean?,
     @SerialName("message")
