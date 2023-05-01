@@ -7,7 +7,6 @@ import com.example.data.model.fcm.FcmResponse
 import com.example.data.model.fcm.req.Body
 import com.example.data.model.fcm.req.Data
 import com.example.data.model.fcm.req.FcmRequest
-import com.example.data.model.fcm.req.Notification
 import com.example.data.model.user_details.ConnectionRequest
 import com.example.data.model.user_details.User
 import com.example.domain.UserRepository
@@ -17,8 +16,6 @@ import io.ktor.client.call.*
 import io.ktor.client.network.sockets.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
-import io.ktor.util.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.litote.kmongo.SetTo
@@ -214,8 +211,9 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                 )
             ).wasAcknowledged()
             val isSuccess = (op1 && op2)
-
-            sendDisconnectNotification()
+            if(isSuccess){
+                sendDisconnectNotification(connectedHeardId)
+            }
 
 
             Status(success = isSuccess, message = if (isSuccess) "disconnect Successfully" else "SomeThing Went wrong")
@@ -296,16 +294,19 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
         }
     }
 
-    override suspend fun sendDisconnectNotification() : Status {
+    override suspend fun sendDisconnectNotification(connectedHeardId: String): Status {
         return try {
+            val connectUser = getUserByHeartId(heartId = connectedHeardId)
             val response = httpClient.post {
                 url(Endpoint.SendNotification.path)
                 setBody(
                     body = FcmRequest(
                         data = Data(
                             isDisconnectRequest = "Yes",
-                        )
-                    )
+                        ),
+                        to = connectUser?.fcmToken
+                    ),
+
                 )
             }
             Status(

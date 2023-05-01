@@ -13,6 +13,6 @@ interface UserRepository {
     suspend fun getUserByHeartId(heartId: String): User?
     suspend fun updateFcmToken(fcmToken : String?,heartId: String): Status
     suspend fun sendMessageNotification(toHeartId: String, messageEntityString: String, fromUserHeartId: String) : Status
-    suspend fun sendDisconnectNotification() :Status
+    suspend fun sendDisconnectNotification(connectedHeardId: String):Status
 
 }
