@@ -25,11 +25,13 @@ class ChatService(private val userRepository: UserRepository) {
 
     suspend fun sendMessage(toUserId: String, messageEntityString: String, fromUserHeartId: String) {
         // Find the user to send the message to
-         // Some logic to determine the recipient
+        // Some logic to determine the recipient
         val toUserSession = users[toUserId] // If the user is not online, do nothing
 
         if(toUserSession == null){
-            userRepository.sendMessageNotification(toHeartId = toUserId,messageEntityString = messageEntityString,fromUserHeartId = fromUserHeartId)
+            if(userRepository.getUserByHeartId(fromUserHeartId)?.connectedHeardId != null){
+                userRepository.sendMessageNotification(toHeartId = toUserId,messageEntityString = messageEntityString,fromUserHeartId = fromUserHeartId)
+            }
         }else{
             toUserSession.send(messageEntityString)
         }

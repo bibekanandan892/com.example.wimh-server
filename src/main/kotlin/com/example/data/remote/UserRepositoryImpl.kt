@@ -27,7 +27,7 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 import java.io.IOException
 
-class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, private val httpClient: HttpClient) :
+class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val httpClient: HttpClient) :
     UserRepository {
 
 
@@ -189,7 +189,7 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
                     SetTo(
                         property = User::connectUserPhoto,
                         value = null
-                    ),SetTo(
+                    ), SetTo(
                         property = User::fcmToken,
                         value = null
                     )
@@ -221,6 +221,10 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
                 )
             ).wasAcknowledged()
             val isSuccess = (op1 && op2)
+            if (isSuccess) {
+                sendDisconnectNotification()
+            }
+
             Status(success = isSuccess, message = if (isSuccess) "disconnect Successfully" else "SomeThing Went wrong")
         }
     }
@@ -244,12 +248,17 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
         )
     }
 
+
+
     override suspend fun sendMessageNotification(
         toHeartId: String, messageEntityString: String, fromUserHeartId: String
     ): Status {
+        val json = Json {
+            ignoreUnknownKeys = true
+        }
         val toUser = getUserByHeartId(heartId = toHeartId)
         val fromUser = getUserByHeartId(heartId = fromUserHeartId)
-        val body = Json.decodeFromString<MessageEntity>(messageEntityString)
+        val body = json.decodeFromString<MessageEntity>(messageEntityString)
         return try {
             val response = httpClient.post {
                 url(Endpoint.SendNotification.path)
@@ -264,7 +273,7 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
                                 id = body.id,
                                 image = body.image,
                                 message = body.message,
-                                isMine =  body.isMine,
+                                isMine = body.isMine,
                             ),
                         ),
                         to = toUser?.fcmToken
@@ -273,7 +282,42 @@ class UserRepositoryImpl constructor(private val dataBase: CoroutineDatabase, pr
             }
             Status(
                 success = true,
-                message = response.body<FcmResponse>().results?.get(0)?.message_id?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
+                message = response.body<FcmResponse>().results?.get(0)?.message_id
+                    ?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
+            )
+        } catch (e: ClientRequestException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: ServerResponseException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: RedirectResponseException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: ConnectTimeoutException) {
+            Status(success = false, message = (e.message ?: "Connection Timeout"))
+        } catch (e: SocketTimeoutException) {
+            Status(success = false, message = (e.message ?: "Socket Timeout"))
+        } catch (e: IOException) {
+            Status(success = false, message = (e.message ?: "Unknown IO Error"))
+        } catch (e: Exception) {
+            Status(success = false, message = (e.message ?: "Unknown Error"))
+        }
+    }
+
+    override suspend fun sendDisconnectNotification() : Status {
+        return try {
+            val response = httpClient.post {
+                url(Endpoint.SendNotification.path)
+                setBody(
+                    body = FcmRequest(
+                        data = Data(
+                            isDisconnectRequest = "Yes"
+                        )
+                    )
+                )
+            }
+            Status(
+                success = true,
+                message = response.body<FcmResponse>().results?.get(0)?.message_id
+                    ?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
             )
         } catch (e: ClientRequestException) {
             Status(success = false, message = (e.response.status.description))
