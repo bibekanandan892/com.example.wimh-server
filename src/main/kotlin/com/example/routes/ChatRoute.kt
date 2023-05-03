@@ -27,6 +27,7 @@ fun Route.chatRoute(chatService: ChatService) {
                     return@webSocket
                 }
                 chatService.register(senderHeartId, this)
+                //dfghjuytfdfghjk
                 try {
                      incoming.consumeEach { frame->
                         if (frame is Frame.Text) {
