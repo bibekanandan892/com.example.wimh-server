@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.data.remote.ChatService
+import com.example.data.remote.ReadReceiptService
 import com.example.domain.UserRepository
 import io.ktor.server.application.*
 import com.example.plugins.*
@@ -13,10 +14,11 @@ fun main(args: Array<String>): Unit =
 fun Application.module() {
     val userRepository by inject<UserRepository>()
     val chatService by inject<ChatService>()
+    val readReceiptService by inject<ReadReceiptService> ()
     configureKoin()
     configureAuth()
     configureSockets()
     configureMonitoring()
     configureSerialization()
-    configureRouting(userRepository= userRepository,chatService = chatService)
+    configureRouting(userRepository= userRepository,chatService = chatService,readReceiptService = readReceiptService)
 }

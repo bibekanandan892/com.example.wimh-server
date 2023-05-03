@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Body(
     @SerialName("currentTime")
-    val currentTime: String?,
+    val timestamp: Long?,
     @SerialName("fromUserHeartId")
     val fromUserHeartId: String?,
     @SerialName("id")
@@ -19,5 +19,8 @@ data class Body(
     @SerialName("message")
     val message: String?,
     @SerialName("toUserHeartId")
-    val toUserHeartId: String?
+    val toUserHeartId: String?,
+    @SerialName("isRead")
+    val isRead: Boolean = false
+
 )

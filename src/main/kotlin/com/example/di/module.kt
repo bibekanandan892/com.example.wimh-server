@@ -1,6 +1,7 @@
 package com.example.di
 
 import com.example.data.remote.ChatService
+import com.example.data.remote.ReadReceiptService
 import com.example.data.remote.UserRepositoryImpl
 import com.example.domain.UserRepository
 import com.example.util.Constants.DATABASE
@@ -27,6 +28,9 @@ val koinModule = module {
     }
     single {
         ChatService(get())
+    }
+    single {
+        ReadReceiptService(get())
     }
 
     single<HttpClient> {

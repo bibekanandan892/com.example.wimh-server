@@ -214,8 +214,6 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
             if(isSuccess){
                 sendDisconnectNotification(connectedHeardId)
             }
-
-
             Status(success = isSuccess, message = if (isSuccess) "disconnect Successfully" else "SomeThing Went wrong")
         }
     }
@@ -258,17 +256,55 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                         data = Data(
                             title = fromUser?.name,
                             body = Body(
-                                currentTime = body.currentTime,
+                                timestamp = body.timestamp,
                                 fromUserHeartId = body.fromUserHeartId,
                                 toUserHeartId = body.toUserHeartId,
                                 id = body.id,
                                 image = body.image,
                                 message = body.message,
                                 isMine = body.isMine,
-
+                                isRead = body.isRead
                             ),
                         ),
                         to = toUser?.fcmToken,
+                    )
+                )
+            }
+            Status(
+                success = true,
+                message = response.body<FcmResponse>().results?.get(0)?.message_id
+                    ?: response.body<FcmResponse>().results?.get(0)?.error ?: "Unknown Error"
+            )
+        } catch (e: ClientRequestException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: ServerResponseException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: RedirectResponseException) {
+            Status(success = false, message = (e.response.status.description))
+        } catch (e: ConnectTimeoutException) {
+            Status(success = false, message = (e.message ?: "Connection Timeout"))
+        } catch (e: SocketTimeoutException) {
+            Status(success = false, message = (e.message ?: "Socket Timeout"))
+        } catch (e: IOException) {
+            Status(success = false, message = (e.message ?: "Unknown IO Error"))
+        } catch (e: Exception) {
+            Status(success = false, message = (e.message ?: "Unknown Error"))
+        }
+    }
+
+    override suspend fun sendReceiptNotification(
+        recipientUser: User, messageIdResponseString: String
+    ): Status {
+        val senderUser = getUserByHeartId(heartId = recipientUser.connectedHeardId?:"NA")
+        return try {
+            val response = httpClient.post {
+                url(Endpoint.SendNotification.path)
+                setBody(
+                    body = FcmRequest(
+                        data = Data(
+                            receiptMessageIdResponse = messageIdResponseString,
+                        ),
+                        to = senderUser?.fcmToken,
                     )
                 )
             }
@@ -302,7 +338,7 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                 setBody(
                     body = FcmRequest(
                         data = Data(
-                            isDisconnectRequest = "Yes",
+                            isDisconnectRequest = connectUser?.name,
                         ),
                         to = connectUser?.fcmToken
                     ),

@@ -16,19 +16,16 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
+fun Route.chatRoute(chatService: ChatService) {
     authenticate("jwt-auth") {
         webSocket("/chat") {
             val principal = call.authentication.principal<JWTPrincipal>()
             try {
                 val senderHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
-
                 if (senderHeartId == null) {
                     close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
                     return@webSocket
                 }
-                val isNotConnect = userRepository.getUserByHeartId(heartId = senderHeartId)?.connectedHeardId == null
-                // Register the user with the chat service
                 chatService.register(senderHeartId, this)
                 try {
                     // Handle incoming messages
@@ -63,6 +60,3 @@ fun Route.chatRoute(chatService: ChatService,userRepository: UserRepository) {
     }
 }
 
-data class MySession(
-    val userId: String
-)

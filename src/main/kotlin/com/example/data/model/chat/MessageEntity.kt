@@ -9,6 +9,7 @@ data class MessageEntity(
     val fromUserHeartId: String,
     val toUserHeartId: String,
     val message: String,
-    val currentTime: String,
+    val timestamp: Long,
     val image: String? = null,
+    val isRead: Boolean = false
 )

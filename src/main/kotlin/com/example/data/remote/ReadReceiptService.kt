@@ -4,7 +4,8 @@ import com.example.domain.UserRepository
 import io.ktor.websocket.*
 import java.util.concurrent.ConcurrentHashMap
 
-    class ChatService(private val userRepository: UserRepository) {
+class ReadReceiptService (private val userRepository: UserRepository) {
+
     private val users = ConcurrentHashMap<String, WebSocketSession>()
 
     fun register(userId: String, session: WebSocketSession) {
@@ -23,17 +24,19 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 
-    suspend fun sendMessage(toUserId: String, messageEntityString: String, fromUserHeartId: String) {
+    suspend fun sendReceipt(messageIdResponseString: String, recipientHeartId: String) {
         // Find the user to send the message to
         // Some logic to determine the recipient
-        val toUserSession = users[toUserId] // If the user is not online, do nothing
+        val recipientUser = userRepository.getUserByHeartId(recipientHeartId)
+
+        val toUserSession = users[recipientUser?.connectedHeardId] // If the user is not online, do nothing
 
         if(toUserSession == null){
-            if(userRepository.getUserByHeartId(fromUserHeartId)?.connectedHeardId != null){
-                userRepository.sendMessageNotification(toHeartId = toUserId,messageEntityString = messageEntityString,fromUserHeartId = fromUserHeartId)
+            if(recipientUser?.connectedHeardId != null){
+                userRepository.sendReceiptNotification(recipientUser = recipientUser,messageIdResponseString = messageIdResponseString)
             }
         }else{
-            toUserSession.send(messageEntityString)
+            toUserSession.send(messageIdResponseString)
         }
     }
 }
