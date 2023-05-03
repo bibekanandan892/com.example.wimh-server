@@ -28,7 +28,6 @@ fun Route.chatRoute(chatService: ChatService) {
                 }
                 chatService.register(senderHeartId, this)
                 try {
-                    // Handle incoming messages
                      incoming.consumeEach { frame->
                         if (frame is Frame.Text) {
                             val messageEntityString = frame.readText()
