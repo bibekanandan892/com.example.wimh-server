@@ -1,5 +1,5 @@
 FROM openjdk:11-jre-slim
-WORKDIR /app
-COPY build/libs/*.jar app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+WORKDIR /app
+COPY build/libs/*.jar /app/wimh-server.jar
+ENTRYPOINT ["java","-jar","/app/wimh-server.jar"]
