@@ -18,7 +18,7 @@ fun Application.configureRouting(userRepository: UserRepository, chatService: Ch
         heartStatusRoute(app = application, userRepository = userRepository)
         sendConnectRequestRoute(app = application , userRepository = userRepository)
         chatRoute(chatService = chatService)
-        readReceiptRoute(readReceiptService = readReceiptService)
+        readReceiptRoute(readReceiptService = readReceiptService, app = application)
         unauthorizedRoute()
     }
 }
