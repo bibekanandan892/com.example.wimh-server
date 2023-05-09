@@ -32,7 +32,6 @@ fun Route.readReceiptRoute(readReceiptService: ReadReceiptService) {
                                     messageIdResponseString = messageIdResponseString,
                                     recipientHeartId = recipientHeartId
                                 )
-
                         }
                     }
                 } catch (e: Exception) {
