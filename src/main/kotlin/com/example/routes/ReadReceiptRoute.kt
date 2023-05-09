@@ -36,6 +36,9 @@ fun Route.readReceiptRoute(app : Application,readReceiptService: ReadReceiptServ
                                     messageIdResponseString = messageIdResponseString,
                                     recipientHeartId = recipientHeartId
                                 )
+                        }else{
+                            app.log.info("$WIMH :::::: going to else part in read resipt ")
+
                         }
                     }
                 } catch (e: Exception) {
