@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Body(
-    @SerialName("currentTime")
+    @SerialName("timestamp")
     val timestamp: Long?,
     @SerialName("fromUserHeartId")
     val fromUserHeartId: String?,
