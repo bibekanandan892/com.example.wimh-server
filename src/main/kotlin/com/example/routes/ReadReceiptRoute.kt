@@ -14,7 +14,7 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 
-fun Route.readReceiptRoute(app : Application,readReceiptService: ReadReceiptService) {
+fun Route.readReceiptRoute(app: Application, readReceiptService: ReadReceiptService) {
     authenticate("jwt-auth") {
         webSocket("/read_receipt") {
             val principal = call.authentication.principal<JWTPrincipal>()
@@ -28,15 +28,15 @@ fun Route.readReceiptRoute(app : Application,readReceiptService: ReadReceiptServ
                 try {
                     // Handle incoming messages
                     app.log.info("$WIMH :::::: recieve the read resipet ")
-                    incoming.consumeEach { frame->
+                    incoming.consumeEach { frame ->
                         if (frame is Frame.Text) {
                             val messageIdResponseString = frame.readText()
                             app.log.info(WIMH, frame.toString())
-                                readReceiptService.sendReceipt(
-                                    messageIdResponseString = messageIdResponseString,
-                                    recipientHeartId = recipientHeartId
-                                )
-                        }else{
+                            readReceiptService.sendReceipt(
+                                messageIdResponseString = messageIdResponseString,
+                                recipientHeartId = recipientHeartId
+                            )
+                        } else {
                             app.log.info("$WIMH :::::: going to else part in read resipt ")
 
                         }
