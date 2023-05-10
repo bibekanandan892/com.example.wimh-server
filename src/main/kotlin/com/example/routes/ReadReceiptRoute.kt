@@ -31,7 +31,7 @@ fun Route.readReceiptRoute(app: Application, readReceiptService: ReadReceiptServ
                     incoming.consumeEach { frame ->
                         if (frame is Frame.Text) {
                             val messageIdResponseString = frame.readText()
-                            app.log.info(WIMH, frame.toString())
+                            app.log.info(WIMH, "this in read receipt incoming flow $frame" )
                             readReceiptService.sendReceipt(
                                 messageIdResponseString = messageIdResponseString,
                                 recipientHeartId = recipientHeartId
