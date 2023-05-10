@@ -26,7 +26,7 @@ class ReadReceiptService (private val userRepository: UserRepository) {
 
     suspend fun sendReceipt(messageIdResponseString: String, recipientHeartId: String) {
         val recipientUser = userRepository.getUserByHeartId(recipientHeartId)
-        val toUserSession = users[recipientHeartId] // If the user is not online, do nothing
+        val toUserSession = users[recipientUser?.connectedHeardId] // If the user is not online, do nothing
         if(toUserSession == null){
             if(recipientUser?.connectedHeardId != null){
                 userRepository.sendReceiptNotification(recipientUser = recipientUser,messageIdResponseString = messageIdResponseString)
