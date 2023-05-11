@@ -239,15 +239,12 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
 
 
 
-    override suspend fun sendMessageNotification(
-        toHeartId: String, messageEntityString: String, fromUserHeartId: String
-    ): Status {
+    override suspend fun sendMessageNotification(messageEntity: MessageEntity): Status {
         val json = Json {
             ignoreUnknownKeys = true
         }
-        val toUser = getUserByHeartId(heartId = toHeartId)
-        val fromUser = getUserByHeartId(heartId = fromUserHeartId)
-        val body = json.decodeFromString<MessageEntity>(messageEntityString)
+        val toUser = getUserByHeartId(heartId = messageEntity.toUserHeartId)
+        val fromUser = getUserByHeartId(heartId = messageEntity.fromUserHeartId)
         return try {
             val response = httpClient.post {
                 url(Endpoint.SendNotification.path)
@@ -256,14 +253,14 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                         data = Data(
                             title = fromUser?.name,
                             body = Body(
-                                timestamp = body.timestamp,
-                                fromUserHeartId = body.fromUserHeartId,
-                                toUserHeartId = body.toUserHeartId,
-                                id = body.id,
-                                image = body.image,
-                                message = body.message,
-                                isMine = body.isMine,
-                                isRead = body.isRead
+                                timestamp = messageEntity.timestamp,
+                                fromUserHeartId = messageEntity.fromUserHeartId,
+                                toUserHeartId = messageEntity.toUserHeartId,
+                                id = messageEntity.id,
+                                image = messageEntity.image,
+                                message = messageEntity.message,
+                                isMine = messageEntity.isMine,
+                                isRead = messageEntity.isRead
                             ),
                         ),
                         to = toUser?.fcmToken,

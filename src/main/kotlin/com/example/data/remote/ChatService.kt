@@ -28,21 +28,15 @@ class ChatService(private val userRepository: UserRepository) {
 
 
     suspend fun sendMessage(
-        toUserId: String,
-        messageEntityString: String,
-        fromUserHeartId: String,
         messageEntity: MessageEntity
     ) {
         // Find the user to send the message to
         // Some logic to determine the recipient
-        val toUserSession = users[toUserId] // If the user is not online, do nothing
-
+        val toUserSession = users[messageEntity.toUserHeartId] // If the user is not online, do nothing
         if (toUserSession == null) {
-            if (userRepository.getUserByHeartId(fromUserHeartId)?.connectedHeardId != null) {
+            if (userRepository.getUserByHeartId(messageEntity.fromUserHeartId)?.connectedHeardId != null) {
                 userRepository.sendMessageNotification(
-                    toHeartId = toUserId,
-                    messageEntityString = messageEntityString,
-                    fromUserHeartId = fromUserHeartId
+                    messageEntity = messageEntity
                 )
             }
         } else {
@@ -53,10 +47,10 @@ class ChatService(private val userRepository: UserRepository) {
     }
 
     suspend fun sendReceipt(
-        messageIdResponseString: String,
         recipientHeartId: String,
         messageIdResponse: MessageIdResponse
     ) {
+        val messageIdResponseString = Json.encodeToString(messageIdResponse)
         val recipientUser = userRepository.getUserByHeartId(recipientHeartId)
         val toUserSession = users[recipientUser?.connectedHeardId] // If the user is not online, do nothing
         if (toUserSession == null) {

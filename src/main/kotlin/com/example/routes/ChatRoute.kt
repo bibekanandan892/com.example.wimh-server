@@ -28,25 +28,18 @@ fun Route.chatRoute(chatService: ChatService) {
                 }
                 chatService.register(senderHeartId, this)
                 try {
-                     incoming.consumeEach { frame->
+                    incoming.consumeEach { frame ->
                         if (frame is Frame.Text) {
                             val payloadString = frame.readText()
                             try {
                                 val payload = Json.decodeFromString<Payload>(payloadString)
                                 payload.messageEntity?.let { messageEntity ->
-                                    val messageEntityString = Json.encodeToString(messageEntity)
                                     chatService.sendMessage(
-                                        toUserId = messageEntity.toUserHeartId,
-                                        fromUserHeartId = messageEntity.fromUserHeartId,
-                                        messageEntityString = messageEntityString,
-                                        messageEntity =messageEntity
-
+                                        messageEntity = messageEntity
                                     )
                                 }
-                                payload.messageIdResponse?.let {messageIdResponse->
-                                    val messageIdResponseString = Json.encodeToString(messageIdResponse)
+                                payload.messageIdResponse?.let { messageIdResponse ->
                                     chatService.sendReceipt(
-                                        messageIdResponseString = messageIdResponseString,
                                         recipientHeartId = senderHeartId,
                                         messageIdResponse = messageIdResponse
                                     )
@@ -66,8 +59,6 @@ fun Route.chatRoute(chatService: ChatService) {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
-
         }
     }
 }

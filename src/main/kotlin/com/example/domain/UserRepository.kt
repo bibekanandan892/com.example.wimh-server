@@ -1,6 +1,7 @@
 package com.example.domain
 
 import com.example.data.model.Status
+import com.example.data.model.chat.MessageEntity
 import com.example.data.model.user_details.User
 
 interface UserRepository {
@@ -12,7 +13,9 @@ interface UserRepository {
     suspend fun getHeartIdBySubId(subId: String): String?
     suspend fun getUserByHeartId(heartId: String): User?
     suspend fun updateFcmToken(fcmToken : String?,heartId: String): Status
-    suspend fun sendMessageNotification(toHeartId: String, messageEntityString: String, fromUserHeartId: String) : Status
+    suspend fun sendMessageNotification(
+        messageEntity: MessageEntity
+    ) : Status
 
     suspend fun sendReceiptNotification(recipientUser: User, messageIdResponseString: String): Status
 
