@@ -1,6 +1,7 @@
 package com.example.routes
 
 import com.example.data.model.chat.MessageEntity
+import com.example.data.model.chat.Payload
 import com.example.data.remote.ChatService
 import com.example.domain.UserRepository
 import com.example.util.Constants
@@ -14,6 +15,7 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun Route.chatRoute(chatService: ChatService) {
@@ -27,18 +29,27 @@ fun Route.chatRoute(chatService: ChatService) {
                     return@webSocket
                 }
                 chatService.register(senderHeartId, this)
-                //dfghjuytfdfghjk
                 try {
                      incoming.consumeEach { frame->
                         if (frame is Frame.Text) {
-                            val messageEntityString = frame.readText()
+                            val payloadString = frame.readText()
                             try {
-                                val messageEntity = Json.decodeFromString<MessageEntity>(messageEntityString)
-                                chatService.sendMessage(
-                                    toUserId = messageEntity.toUserHeartId,
-                                    fromUserHeartId = messageEntity.fromUserHeartId,
-                                    messageEntityString = messageEntityString
-                                )
+                                val payload = Json.decodeFromString<Payload>(payloadString)
+                                payload.messageEntity?.let { message ->
+                                    val messageEntityString = Json.encodeToString(message)
+                                    chatService.sendMessage(
+                                        toUserId = message.toUserHeartId,
+                                        fromUserHeartId = message.fromUserHeartId,
+                                        messageEntityString = messageEntityString
+                                    )
+                                }
+                                payload.messageIdResponse?.let {messageIdResponse->
+                                    val messageIdResponseString = Json.encodeToString(messageIdResponse)
+                                    chatService.sendReceipt(
+                                        messageIdResponseString = messageIdResponseString,
+                                        recipientHeartId = senderHeartId
+                                    )
+                                }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }

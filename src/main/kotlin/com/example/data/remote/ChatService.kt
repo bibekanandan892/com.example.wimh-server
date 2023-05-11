@@ -4,11 +4,11 @@ import com.example.domain.UserRepository
 import io.ktor.websocket.*
 import java.util.concurrent.ConcurrentHashMap
 
-    class ChatService(private val userRepository: UserRepository) {
+class ChatService(private val userRepository: UserRepository) {
     private val users = ConcurrentHashMap<String, WebSocketSession>()
 
     fun register(userId: String, session: WebSocketSession) {
-        if(!users.containsKey(userId)){
+        if (!users.containsKey(userId)) {
             users[userId] = session
         }
     }
@@ -16,11 +16,10 @@ import java.util.concurrent.ConcurrentHashMap
 
     suspend fun unregister(userId: String) {
         users[userId]?.close()
-        if(users.containsKey(userId)){
+        if (users.containsKey(userId)) {
             users.remove(userId)
         }
     }
-
 
 
     suspend fun sendMessage(toUserId: String, messageEntityString: String, fromUserHeartId: String) {
@@ -28,12 +27,31 @@ import java.util.concurrent.ConcurrentHashMap
         // Some logic to determine the recipient
         val toUserSession = users[toUserId] // If the user is not online, do nothing
 
-        if(toUserSession == null){
-            if(userRepository.getUserByHeartId(fromUserHeartId)?.connectedHeardId != null){
-                userRepository.sendMessageNotification(toHeartId = toUserId,messageEntityString = messageEntityString,fromUserHeartId = fromUserHeartId)
+        if (toUserSession == null) {
+            if (userRepository.getUserByHeartId(fromUserHeartId)?.connectedHeardId != null) {
+                userRepository.sendMessageNotification(
+                    toHeartId = toUserId,
+                    messageEntityString = messageEntityString,
+                    fromUserHeartId = fromUserHeartId
+                )
             }
-        }else{
+        } else {
             toUserSession.send(messageEntityString)
+        }
+    }
+
+    suspend fun sendReceipt(messageIdResponseString: String, recipientHeartId: String) {
+        val recipientUser = userRepository.getUserByHeartId(recipientHeartId)
+        val toUserSession = users[recipientUser?.connectedHeardId] // If the user is not online, do nothing
+        if (toUserSession == null) {
+            if (recipientUser?.connectedHeardId != null) {
+                userRepository.sendReceiptNotification(
+                    recipientUser = recipientUser,
+                    messageIdResponseString = messageIdResponseString
+                )
+            }
+        } else {
+            toUserSession.send(messageIdResponseString)
         }
     }
 }

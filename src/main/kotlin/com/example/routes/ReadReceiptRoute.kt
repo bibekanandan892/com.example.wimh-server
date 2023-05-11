@@ -15,44 +15,44 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 
 fun Route.readReceiptRoute(app: Application, readReceiptService: ReadReceiptService) {
-    authenticate("jwt-auth") {
-        webSocket("/read_receipt") {
-            val principal = call.authentication.principal<JWTPrincipal>()
-            try {
-                val recipientHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
-                if (recipientHeartId == null) {
-                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
-                    return@webSocket
-                }
-                readReceiptService.register(recipientHeartId, this)
-                try {
-                    // Handle incoming messages
-                    app.log.info("$WIMH :::::: recieve the read resipet ")
-                    incoming.consumeEach { frame ->
-                        if (frame is Frame.Text) {
-                            val messageIdResponseString = frame.readText()
-                            app.log.info(WIMH, "this in read receipt incoming flow $frame" )
-                            readReceiptService.sendReceipt(
-                                messageIdResponseString = messageIdResponseString,
-                                recipientHeartId = recipientHeartId
-                            )
-                        } else {
-                            app.log.info("$WIMH :::::: going to else part in read resipt ")
-
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    readReceiptService.unregister(recipientHeartId)
-                }
-            } catch (e: MemberAlreadyExistsException) {
-                call.respond(HttpStatusCode.Conflict)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-
-        }
-    }
+//    authenticate("jwt-auth") {
+//        webSocket("/read_receipt") {
+//            val principal = call.authentication.principal<JWTPrincipal>()
+//            try {
+//                val recipientHeartId = principal?.payload?.getClaim(Constants.HEART_ID_KEY)?.asString()
+//                if (recipientHeartId == null) {
+//                    close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Not authenticated"))
+//                    return@webSocket
+//                }
+//                readReceiptService.register(recipientHeartId, this)
+//                try {
+//                    // Handle incoming messages
+//                    app.log.info("$WIMH :::::: recieve the read resipet ")
+//                    incoming.consumeEach { frame ->
+//                        if (frame is Frame.Text) {
+//                            val messageIdResponseString = frame.readText()
+//                            app.log.info(WIMH, "this in read receipt incoming flow $frame" )
+//                            readReceiptService.sendReceipt(
+//                                messageIdResponseString = messageIdResponseString,
+//                                recipientHeartId = recipientHeartId
+//                            )
+//                        } else {
+//                            app.log.info("$WIMH :::::: going to else part in read resipt ")
+//
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                } finally {
+//                    readReceiptService.unregister(recipientHeartId)
+//                }
+//            } catch (e: MemberAlreadyExistsException) {
+//                call.respond(HttpStatusCode.Conflict)
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//
+//
+//        }
+//    }
 }
