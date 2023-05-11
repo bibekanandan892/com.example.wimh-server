@@ -1,7 +1,12 @@
 package com.example.data.remote
 
+import com.example.data.model.chat.MessageEntity
+import com.example.data.model.chat.Payload
+import com.example.data.model.read_receipt.MessageIdResponse
 import com.example.domain.UserRepository
 import io.ktor.websocket.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
 
 class ChatService(private val userRepository: UserRepository) {
@@ -22,7 +27,12 @@ class ChatService(private val userRepository: UserRepository) {
     }
 
 
-    suspend fun sendMessage(toUserId: String, messageEntityString: String, fromUserHeartId: String) {
+    suspend fun sendMessage(
+        toUserId: String,
+        messageEntityString: String,
+        fromUserHeartId: String,
+        messageEntity: MessageEntity
+    ) {
         // Find the user to send the message to
         // Some logic to determine the recipient
         val toUserSession = users[toUserId] // If the user is not online, do nothing
@@ -36,11 +46,17 @@ class ChatService(private val userRepository: UserRepository) {
                 )
             }
         } else {
-            toUserSession.send(messageEntityString)
+            val messagePayload = Payload(messageEntity = messageEntity)
+            val messagePayloadString = Json.encodeToString(messagePayload)
+            toUserSession.send(messagePayloadString)
         }
     }
 
-    suspend fun sendReceipt(messageIdResponseString: String, recipientHeartId: String) {
+    suspend fun sendReceipt(
+        messageIdResponseString: String,
+        recipientHeartId: String,
+        messageIdResponse: MessageIdResponse
+    ) {
         val recipientUser = userRepository.getUserByHeartId(recipientHeartId)
         val toUserSession = users[recipientUser?.connectedHeardId] // If the user is not online, do nothing
         if (toUserSession == null) {
@@ -51,7 +67,9 @@ class ChatService(private val userRepository: UserRepository) {
                 )
             }
         } else {
-            toUserSession.send(messageIdResponseString)
+            val receiptPayload = Payload(messageIdResponse = messageIdResponse)
+            val receiptPayloadString = Json.encodeToString(receiptPayload)
+            toUserSession.send(receiptPayloadString)
         }
     }
 }

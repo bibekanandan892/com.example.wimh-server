@@ -1,9 +1,7 @@
 package com.example.routes
 
-import com.example.data.model.chat.MessageEntity
 import com.example.data.model.chat.Payload
 import com.example.data.remote.ChatService
-import com.example.domain.UserRepository
 import com.example.util.Constants
 import com.example.util.MemberAlreadyExistsException
 import io.ktor.http.*
@@ -35,19 +33,22 @@ fun Route.chatRoute(chatService: ChatService) {
                             val payloadString = frame.readText()
                             try {
                                 val payload = Json.decodeFromString<Payload>(payloadString)
-                                payload.messageEntity?.let { message ->
-                                    val messageEntityString = Json.encodeToString(message)
+                                payload.messageEntity?.let { messageEntity ->
+                                    val messageEntityString = Json.encodeToString(messageEntity)
                                     chatService.sendMessage(
-                                        toUserId = message.toUserHeartId,
-                                        fromUserHeartId = message.fromUserHeartId,
-                                        messageEntityString = messageEntityString
+                                        toUserId = messageEntity.toUserHeartId,
+                                        fromUserHeartId = messageEntity.fromUserHeartId,
+                                        messageEntityString = messageEntityString,
+                                        messageEntity =messageEntity
+
                                     )
                                 }
                                 payload.messageIdResponse?.let {messageIdResponse->
                                     val messageIdResponseString = Json.encodeToString(messageIdResponse)
                                     chatService.sendReceipt(
                                         messageIdResponseString = messageIdResponseString,
-                                        recipientHeartId = senderHeartId
+                                        recipientHeartId = senderHeartId,
+                                        messageIdResponse = messageIdResponse
                                     )
                                 }
                             } catch (e: Exception) {
