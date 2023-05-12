@@ -20,7 +20,7 @@ data class Body(
     val message: String?,
     @SerialName("toUserHeartId")
     val toUserHeartId: String?,
-    @SerialName("isRead")
-    val isRead: Boolean = false
+    @SerialName("messageStatus")
+    var messageStatus : String? = null,
 
 )

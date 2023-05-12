@@ -11,6 +11,6 @@ data class MessageEntity(
     val message: String,
     val timestamp: Long,
     val image: String? = null,
-    val isRead: Boolean = false,
+    var messageStatus : String? = null,
     var isReadReceiptSent: Boolean = false
 )

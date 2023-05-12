@@ -260,7 +260,7 @@ class UserRepositoryImpl(private val dataBase: CoroutineDatabase, private val ht
                                 image = messageEntity.image,
                                 message = messageEntity.message,
                                 isMine = messageEntity.isMine,
-                                isRead = messageEntity.isRead
+                                messageStatus = messageEntity.messageStatus
                             ),
                         ),
                         to = toUser?.fcmToken,
