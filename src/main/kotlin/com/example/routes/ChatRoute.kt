@@ -45,12 +45,14 @@ fun Route.chatRoute(chatService: ChatService) {
                                     )
                                 }
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                chatService.unregister(senderHeartId)
                             }
+                        }else if( frame is Frame.Close){
+                            chatService.unregister(senderHeartId)
                         }
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    chatService.unregister(senderHeartId)
                 } finally {
                     chatService.unregister(senderHeartId)
                 }
